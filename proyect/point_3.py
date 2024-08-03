@@ -14,7 +14,7 @@ cursor = conn.cursor()
 
 # Consulta para obtener los clientes con más de 3 eventos de falla
 query = """
-SELECT c.first_name, c.last_name, COUNT(e.dt) as failures
+SELECT CONCAT(c.first_name,' ',c.last_name) as customer, COUNT(e.dt) as failures
 FROM customers c
 JOIN campaigns ca ON c.id = ca.customer_id
 JOIN events e ON ca.id = e.campaign_id
@@ -26,10 +26,14 @@ HAVING failures > 3
 cursor.execute(query)
 results = cursor.fetchall()
 
-# Imprimir los resultados
-for row in results:
-    first_name, last_name, failures = row
-    print(f"customer: {first_name} {last_name}, failures: {failures}")
+# Obtener los nombres de las columnas
+column_names = [desc[0] for desc in cursor.description]
+
+# Convertir los resultados a una lista de diccionarios
+results_dict = [dict(zip(column_names, row)) for row in results]
+
+print(results_dict)
+
 
 # Cerrar la conexión
 cursor.close()
