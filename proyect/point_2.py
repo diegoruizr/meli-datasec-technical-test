@@ -1,42 +1,36 @@
-from flask import Flask, request
 import requests
 
-app = Flask(__name__)
+def bestInGenre(genre):
+    best_show = None
+    page = 1
+    genre = genre.lower().strip()
+    best_rating = float('-inf')
 
-# Ruta de ejemplo para obtener datos
-@app.route('/api/shows', methods=['GET'])
-def bestInGenre():
-     # Obtener el parámetro de consulta 'page' y 'genre' de la URL
-    page = request.args.get('page', default=1, type=int)
-    genre = request.args.get('genre', default='', type=str)
+    while True:
+        url = f'https://jsonmock.hackerrank.com/api/tvseries?page={page}'
+        response = requests.get(url)
+        
+        if response.status_code != 200:
+            break
 
-     # URL de la API externa con el parámetro de página
-    url = f'https://jsonmock.hackerrank.com/api/tvseries?page={page}'
-
-    # Hacer la solicitud a la API externa
-    response = requests.get(url)
-
-    # Verificar si la solicitud fue exitosa
-    if response.status_code == 200:
         data = response.json()
         shows = data['data']
-        
-        # Filtrar las series por género
-        filtered_shows = [show for show in shows if genre.lower() in [g.strip().lower() for g in show['genre'].split(',')]]
-        
-        # Encontrar la serie con la calificación imdb_rating más alta
-        if filtered_shows:
-            best_show = max(filtered_shows, key=sort_key)
-            result = best_show['name']
-        else:
-            result =  f'No se encontraron series con el genero {genre}'
-    else:
-        result = 'Error al obtener datos de la API externa'
-    
-    return result
 
-def sort_key(show):
-    return float(show['imdb_rating']), show['name']
+        if not shows:
+            break
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        for show in shows:
+            show_genres = [g.strip().lower() for g in show['genre'].split(',')]
+            if genre in show_genres:
+                show_rating = float(show['imdb_rating'])
+                if best_show is None or show_rating > best_rating or (show_rating == best_rating and show['name'] > best_show['name']):
+                    best_show = show
+                    best_rating = show_rating
+
+        page += 1
+
+    return best_show['name'] if best_show else f'No se encontraron series con el genero {genre}, o existe error al consultar la URL externa'
+
+if __name__ == "__main__":
+    genre = input("Ingrese el género de la serie: ").strip()
+    print(bestInGenre(genre))

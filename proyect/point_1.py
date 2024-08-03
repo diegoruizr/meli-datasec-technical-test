@@ -1,3 +1,4 @@
+import copy
 import pprint
 
 input_minesweeper = [
@@ -7,8 +8,8 @@ input_minesweeper = [
         ['1', '1', '0', '0']
     ]
 
-# Declarar una matriz vacía de 4 por 4
-output_minesweeper = [['' for _ in range(4)] for _ in range(4)]
+# Declarar una matriz vacía dinamica
+output_minesweeper = copy.deepcopy(input_minesweeper)
 
 # Para cada elemento en el campo (una matriz 2D)
 for i in range(len(input_minesweeper)):
@@ -30,5 +31,5 @@ for i in range(len(input_minesweeper)):
             # Si el elemento actual es '1', asigna '9' en la matriz de salida
             output_minesweeper[i][j] = str('9')
 
-pprint.pprint(output_minesweeper, width=25)
+pprint.pprint(output_minesweeper)
 
